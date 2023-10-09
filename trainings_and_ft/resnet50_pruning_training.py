@@ -1,9 +1,10 @@
 import torch
-from ..utils.training_utils import create_data_loaders, save_model, load_model, create_model,  train_model, init_seed
+from ..utils.training_utils import create_data_loaders, save_model, create_model,  train_model, init_seed
 import torch.quantization
 
 
 if __name__== "__main__":
+    init_seed()
     train_dir = "/home/ray/nfs/autolang_storage/projects/divyam/data/train/"
     val_dir = "/home/ray/nfs/autolang_storage/projects/divyam/data/valid/"
     test_dir = "/home/ray/nfs/autolang_storage/projects/divyam/data/test/"

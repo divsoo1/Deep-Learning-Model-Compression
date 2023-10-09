@@ -2,14 +2,11 @@ import os
 import shutil
 import random
 
-# Set your source and destination directories
-source_dir = '/home/ray/nfs/autolang_storage/projects/divyam/data'  # Replace with your source directory
-destination_dir = '/home/ray/nfs/autolang_storage/projects/divyam/small_data'  # Replace with your destination directory
+source_dir = '/home/ray/nfs/autolang_storage/projects/divyam/data' 
+destination_dir = '/home/ray/nfs/autolang_storage/projects/divyam/small_data'
 
-# Define your split ratio (e.g., 0.2 for a 80/20 split)
-split_ratio = 0.5  # You can adjust this as needed
+split_ratio = 0.5
 
-# Create the smaller versions of your datasets
 def create_smaller_dataset(src_dir, dest_dir, split_ratio):
     for folder_name in os.listdir(src_dir):
         if os.path.isdir(os.path.join(src_dir, folder_name)):
@@ -28,9 +25,7 @@ def create_smaller_dataset(src_dir, dest_dir, split_ratio):
                 dest_file = os.path.join(dest_sub_dir, file_name)
                 shutil.copy(src_file, dest_file)
 
-# only run following once. Already done for now
 
-# Create smaller datasets for train, test, and val
 create_smaller_dataset(os.path.join(source_dir, 'train'), os.path.join(destination_dir, 'small_train'), split_ratio)
 create_smaller_dataset(os.path.join(source_dir, 'test'), os.path.join(destination_dir, 'small_test'), split_ratio)
 create_smaller_dataset(os.path.join(source_dir, 'valid'), os.path.join(destination_dir, 'small_valid'), split_ratio)

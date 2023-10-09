@@ -3,7 +3,6 @@ import copy
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 def loss_kd(outputs, labels, teacher_outputs, temperature, alpha):
