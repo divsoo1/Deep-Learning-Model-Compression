@@ -24,4 +24,11 @@ Inside the `models` directory, you can find custom model architectures. This inc
 
 Explore the `findings` folder to view accuracy and loss plots for the trained and fine-tuned models. For a more comprehensive and detailed report on the project, please refer to the project report submitted separately.
 
+## References
+
+This project was developed with inspiration from the following sources:
+- [Maximizing Model Performance with Knowledge Distillation in PyTorch](https://medium.com/artificialis/maximizing-model-performance-with-knowledge-distillation-in-pytorch-12b3960a486a)
+- [Resnet50 Quantization](https://github.com/zanvari/resnet50-quantization)
+- [Neural Network Pruning](https://github.com/arjun-majumdar/Neural_Network_Pruning)
+
 Feel free to reach out if you have any questions or need further information about this project.
