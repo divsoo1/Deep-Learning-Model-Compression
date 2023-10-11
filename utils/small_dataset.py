@@ -1,9 +1,10 @@
 import os
 import shutil
 import random
+from .paths import DATA_DIR, DATA_DIR_SMALL
 
-source_dir = '/home/ray/nfs/autolang_storage/projects/divyam/data' 
-destination_dir = '/home/ray/nfs/autolang_storage/projects/divyam/small_data'
+source_dir = DATA_DIR
+destination_dir = DATA_DIR_SMALL
 
 split_ratio = 0.5
 
@@ -17,7 +18,6 @@ def create_smaller_dataset(src_dir, dest_dir, split_ratio):
             num_files = len(file_list)
             num_samples = int(num_files * split_ratio)
 
-            # Randomly sample files for the smaller dataset
             selected_files = random.sample(file_list, num_samples)
 
             for file_name in selected_files:

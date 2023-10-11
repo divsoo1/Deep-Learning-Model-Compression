@@ -6,15 +6,36 @@ import torch.nn.functional as F
 from tqdm import tqdm
 
 def loss_kd(outputs, labels, teacher_outputs, temperature, alpha):
+    """
+    Calculate the knowledge distillation loss between student and teacher networks.
+
+    Parameters:
+        outputs (Tensor): Predicted class probabilities by the student network.
+        labels (Tensor): True class labels.
+        teacher_outputs (Tensor): Predicted class probabilities by the teacher network.
+        temperature (float): Temperature parameter for softening the distributions.
+        alpha (float): Weighting factor for the knowledge distillation loss.
+
+    Returns:
+        KD_loss (Tensor): Knowledge distillation loss.
+    """
     KD_loss = nn.KLDivLoss()(F.log_softmax(outputs / temperature, dim=1),
                              F.softmax(teacher_outputs / temperature, dim=1)) * (alpha * temperature * temperature) + \
               F.cross_entropy(outputs, labels) * (1.0 - alpha)
     return KD_loss
 
 def get_outputs(model, dataloader, device):
-    '''
-    Used to get the output of the teacher network
-    '''
+    """
+    Get the output of a neural network for a given dataset.
+
+    Parameters:
+        model (nn.Module): The neural network model.
+        dataloader (DataLoader): Data loader for the dataset.
+        device (str): Device to run the model on ('cuda' or 'cpu').
+
+    Returns:
+        outputs (list): List of model outputs for each batch in the dataset.
+    """
     model.eval()
     outputs = []
 
@@ -22,18 +43,33 @@ def get_outputs(model, dataloader, device):
         for inputs, labels in dataloader:
             inputs_batch, labels_batch = inputs.to(device), labels.to(device)
             output_batch = model(inputs_batch)
-            # Ensure the output is on the same device as specified by 'device'
             output_batch = output_batch.detach().cpu().numpy() if device == 'cuda' else output_batch.detach().numpy()
             outputs.append(output_batch)
 
     return outputs
 
-
 def train_kd(model, teacher_out, optimizer, loss_kd, dataloader, temperature, alpha, device):
+    """
+    Train a student network using knowledge distillation.
+
+    Parameters:
+        model (nn.Module): The student network.
+        teacher_out (list): Teacher network outputs for the training dataset.
+        optimizer (Optimizer): The optimizer for training.
+        loss_kd (function): Knowledge distillation loss function.
+        dataloader (DataLoader): Data loader for the training dataset.
+        temperature (float): Temperature parameter for softening the distributions.
+        alpha (float): Weighting factor for the knowledge distillation loss.
+        device (str): Device to run the training on ('cuda' or 'cpu').
+
+    Returns:
+        epoch_loss (float): Average training loss for the epoch.
+        epoch_acc (float): Training accuracy for the epoch.
+    """
     model.train()
     running_loss = 0.0
     running_corrects = 0
-    
+
     for i, (images, labels) in enumerate(tqdm(dataloader, total=len(dataloader), desc="Training")):
         inputs = images.to(device)
         labels = labels.to(device)
@@ -52,10 +88,27 @@ def train_kd(model, teacher_out, optimizer, loss_kd, dataloader, temperature, al
     return epoch_loss, epoch_acc
 
 def eval_kd(model, teacher_out, optimizer, loss_kd, dataloader, temperature, alpha, device):
+    """
+    Evaluate a student network using knowledge distillation.
+
+    Parameters:
+        model (nn.Module): The student network.
+        teacher_out (list): Teacher network outputs for the validation dataset.
+        optimizer (Optimizer): The optimizer for evaluation.
+        loss_kd (function): Knowledge distillation loss function.
+        dataloader (DataLoader): Data loader for the validation dataset.
+        temperature (float): Temperature parameter for softening the distributions.
+        alpha (float): Weighting factor for the knowledge distillation loss.
+        device (str): Device to run the evaluation on ('cuda' or 'cpu').
+
+    Returns:
+        epoch_loss (float): Average validation loss for the epoch.
+        epoch_acc (float): Validation accuracy for the epoch.
+    """
     model.eval()
     running_loss = 0.0
     running_corrects = 0
-    
+
     for i, (images, labels) in enumerate(tqdm(dataloader, total=len(dataloader), desc="Validation")):
         inputs = images.to(device)
         labels = labels.to(device)
@@ -71,8 +124,25 @@ def eval_kd(model, teacher_out, optimizer, loss_kd, dataloader, temperature, alp
     return epoch_loss, epoch_acc
 
 def train_and_evaluate_kd(model, teacher_model, optimizer, loss_kd, trainloader, valloader, temperature, alpha, num_epochs=25, save_path=None, device="cuda"):
-    # Remove the check for multiple GPUs and DataParallel
-    # Replace device with 'cuda' or 'cpu'
+    """
+    Train and evaluate a student network using knowledge distillation.
+
+    Parameters:
+        model (nn.Module): The student network.
+        teacher_model (nn.Module): The teacher network.
+        optimizer (Optimizer): The optimizer for training and evaluation.
+        loss_kd (function): Knowledge distillation loss function.
+        trainloader (DataLoader): Data loader for the training dataset.
+        valloader (DataLoader): Data loader for the validation dataset.
+        temperature (float): Temperature parameter for softening the distributions.
+        alpha (float): Weighting factor for the knowledge distillation loss.
+        num_epochs (int): Number of training epochs (default: 25).
+        save_path (str): Path to save the best model checkpoint (default: None).
+        device (str): Device to run the training and evaluation on ('cuda' or 'cpu').
+
+    Returns:
+        model (nn.Module): The trained student model.
+    """
     if device == 'cuda':
         if not torch.cuda.is_available():
             print("CUDA is not available. Switching to CPU.")
@@ -93,7 +163,6 @@ def train_and_evaluate_kd(model, teacher_model, optimizer, loss_kd, trainloader,
     print("Teacher’s outputs are computed. Starting the training process...")
     best_acc = 0.0
 
-    # Lists to store epoch, loss, and accuracy values
     epoch_list = []
     train_loss_list = []
     train_acc_list = []
@@ -104,16 +173,12 @@ def train_and_evaluate_kd(model, teacher_model, optimizer, loss_kd, trainloader,
         print('Epoch {}/{}'.format(epoch, num_epochs - 1))
         print('-' * 10)
 
-        # Training the student with the soft labels as the outputs from the teacher
-        # and using the loss_kd function
         train_loss, train_acc = train_kd(model, outputs_teacher_train, optimizer, loss_kd, trainloader, temperature, alpha, device)
-        print('Train Loss: {:.4f} Acc: {:.4f}'.format(train_loss, train_acc))
+        print('Train Loss: {:.4f} Acc: {:.4f'.format(train_loss, train_acc))
 
-        # Evaluating the student network
         val_loss, val_acc = eval_kd(model, outputs_teacher_val, optimizer, loss_kd, valloader, temperature, alpha, device)
-        print('Val Loss: {:.4f} Acc: {:.4f}'.format(val_loss, val_acc))
+        print('Val Loss: {:.4f} Acc: {:.4f'.format(val_loss, val_acc))
 
-        # Append epoch, loss, and accuracy values to lists
         epoch_list.append(epoch)
         train_loss_list.append(train_loss)
         train_acc_list.append(train_acc.item())
@@ -125,7 +190,6 @@ def train_and_evaluate_kd(model, teacher_model, optimizer, loss_kd, trainloader,
             best_model_wts = copy.deepcopy(model.state_dict())
             print('Best val Acc: {:.4f}'.format(best_acc))
 
-            # Save the best model's state dictionary to a file
             if save_path is not None:
                 checkpoint_path = os.path.join(save_path, f"best_model_epoch{epoch}.pt")
                 torch.save(model.state_dict(), checkpoint_path)
@@ -133,7 +197,6 @@ def train_and_evaluate_kd(model, teacher_model, optimizer, loss_kd, trainloader,
 
     model.load_state_dict(best_model_wts)
 
-    # Save the training and validation metrics to a checkpoint file
     if save_path is not None:
         checkpoint_file = os.path.join(save_path, "training_metrics.ckpt")
         torch.save({
@@ -144,5 +207,4 @@ def train_and_evaluate_kd(model, teacher_model, optimizer, loss_kd, trainloader,
             'val_acc_list': val_acc_list
         }, checkpoint_file)
 
-    # Optionally return the path to the saved best model
     return model

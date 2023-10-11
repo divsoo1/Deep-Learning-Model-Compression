@@ -1,20 +1,18 @@
 import torch
 from ..utils.training_utils import create_data_loaders, save_model, create_model,  train_model, init_seed
 import torch.quantization
+from ..utils import paths
 
 
 if __name__== "__main__":
-    init_seed()
-    train_dir = "/home/ray/nfs/autolang_storage/projects/divyam/data/train/"
-    val_dir = "/home/ray/nfs/autolang_storage/projects/divyam/data/valid/"
-    test_dir = "/home/ray/nfs/autolang_storage/projects/divyam/data/test/"
-    checkpoint_dir = "/home/ray/nfs/autolang_storage/projects/divyam/pruning/unpruned_resnet50_trained"
 
+    init_seed()
+    checkpoint_dir = paths.RESNET50_PRUNABLE_TRAINING_FULL_CHECKPOINTDIR
     model_name = "resnet50"
     num_classes = 525
     batch_size = 256
     epochs =  20
-    train_loader, val_loader, test_loader = create_data_loaders(train_dir, val_dir, batch_size, test_dir=test_dir)
+    train_loader, val_loader, test_loader = create_data_loaders(paths.TRAIN_DIR, paths.VALID_DIR, batch_size, test_dir=paths.TRAIN_DIR)
     model = create_model(model_name, num_classes, only_last=False, pretrained=True)
     model.conv1 = torch.nn.Conv2d(
         in_channels = 3, out_channels = 64,

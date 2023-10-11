@@ -1,19 +1,17 @@
 from ..utils.training_utils import create_data_loaders, save_model, load_model
 from ..utils.quantization_utils import prepare_for_quantization, convert_to_quantized_model, evaluate_quantized_model, get_model_size, evaluate
+from ..utils import paths
 
 if __name__ == "__main__":
-    train_dir = "/home/ray/nfs/autolang_storage/projects/divyam/data/train/"
-    val_dir = "/home/ray/nfs/autolang_storage/projects/divyam/data/valid/"
-    test_dir = "/home/ray/nfs/autolang_storage/projects/divyam/data/test/"
-    checkpoint_dir = "/home/ray/nfs/autolang_storage/projects/divyam/primary_ft_training/quantizable_resnet50_full/final_model.pt"
-    quantized_checkpoint_dir = "/home/ray/nfs/autolang_storage/projects/divyam/primary_ft_training/post_quantization_resnet50_full_moritz_model_size/final_model.pt"
+
+    checkpoint_dir = paths.RESNET50_QUANTIZABLE_TRAINING_FULL_CHECKPOINTDIR
+    quantized_checkpoint_dir = paths.RESNET50_QUANTIZED_CHECKPOINTDIR
     model_name = "resnet_quantizable"
     num_classes = 525
     batch_size = 256
     num_calibration_batches = 10
 
-    # Create data loaders
-    train_loader, val_loader, test_loader = create_data_loaders(train_dir, val_dir, batch_size, test_dir=test_dir)
+    train_loader, val_loader, test_loader = create_data_loaders(paths.TRAIN_DIR, paths.VALID_DIR, batch_size, test_dir=paths.TEST_DIR)
 
     model_fp32 = load_model(model_name, checkpoint_dir, num_classes, only_last=False, pretrained=True)
     model_fp32 = model_fp32.to('cpu')

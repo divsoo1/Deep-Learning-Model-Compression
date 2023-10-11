@@ -13,17 +13,26 @@ import torch.nn as nn
 from ..models.resnet_quantizable import resnet50_quantizable
 from transformers import enable_full_determinism
 
-
 def init_seed():
-    # Set the random seed manually for reproducibility.
-    
-	os.environ['PYTHONHASHSEED'] = str(42)
-	enable_full_determinism(42)
+    """ Initialize the random seed for reproducibility.
+    """
+    os.environ['PYTHONHASHSEED'] = str(42)
+    enable_full_determinism(42)
 
 def create_data_loaders(train_dir, val_dir,  batch_size, test_dir=None):
-    """ Create data loaders for the given train, val and test directories.
+    """ Create data loaders for the given train, val, and test directories.
+
+    Args:
+        train_dir (str): Path to the training data directory.
+        val_dir (str): Path to the validation data directory.
+        batch_size (int): Batch size for data loaders.
+        test_dir (str, optional): Path to the test data directory.
+
+    Returns:
+        train_loader (DataLoader): DataLoader for training data.
+        val_loader (DataLoader): DataLoader for validation data.
+        test_loader (DataLoader, optional): DataLoader for test data.
     """
-    
     transform = transforms.Compose([transforms.Resize((224, 224)),
                                     transforms.ToTensor(),
                                     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
@@ -43,8 +52,16 @@ def create_data_loaders(train_dir, val_dir,  batch_size, test_dir=None):
 
 def create_model(model_name, num_classes, only_last=True, pretrained=True):
     """ Create a model with the given name and number of classes.
+
+    Args:
+        model_name (str): Name of the model architecture.
+        num_classes (int): Number of classes for classification.
+        only_last (bool, optional): Whether to train only the last layer. Default is True.
+        pretrained (bool, optional): Whether to use pre-trained weights. Default is True.
+
+    Returns:
+        model (nn.Module): Created neural network model.
     """
-    
     if model_name == "resnet50":
         model = models.resnet50(pretrained=pretrained)
     elif model_name == "densenet121":
@@ -85,6 +102,17 @@ def create_model(model_name, num_classes, only_last=True, pretrained=True):
 
 def train_model(model, train_loader, val_loader, num_epochs, lr=0.001, save_path="model_checkpoints"):
     """ Train the given model for the given number of epochs.
+
+    Args:
+        model (nn.Module): Neural network model to train.
+        train_loader (DataLoader): DataLoader for training data.
+        val_loader (DataLoader): DataLoader for validation data.
+        num_epochs (int): Number of training epochs.
+        lr (float, optional): Learning rate. Default is 0.001.
+        save_path (str, optional): Directory to save model checkpoints. Default is "model_checkpoints".
+
+    Returns:
+        model (nn.Module): Trained neural network model.
     """
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -183,17 +211,28 @@ def train_model(model, train_loader, val_loader, num_epochs, lr=0.001, save_path
 
 def save_model(model, checkpoint_dir="model_checkpoints"):
     """ Save the given model to the given checkpoint directory.
+
+    Args:
+        model (nn.Module): Neural network model to save.
+        checkpoint_dir (str, optional): Directory to save the model checkpoint. Default is "model_checkpoints".
     """
-    
     os.makedirs(checkpoint_dir, exist_ok=True)
     final_checkpoint_path = os.path.join(checkpoint_dir, "final_model.pt")
     torch.save(model.state_dict(), final_checkpoint_path)
 
-
 def load_model(model_name, checkpoint_path, num_classes, only_last, pretrained):
     """ Load the model from the given checkpoint path.
+
+    Args:
+        model_name (str): Name of the model architecture.
+        checkpoint_path (str): Path to the model checkpoint.
+        num_classes (int): Number of classes for classification.
+        only_last (bool): Whether to train only the last layer.
+        pretrained (bool): Whether to use pre-trained weights.
+
+    Returns:
+        model (nn.Module): Loaded neural network model.
     """
-    
     model = create_model(model_name, num_classes, only_last=only_last, pretrained=pretrained)
     checkpoint = torch.load(checkpoint_path)
     if all(k.startswith('module.') for k in checkpoint.keys()):
@@ -202,10 +241,18 @@ def load_model(model_name, checkpoint_path, num_classes, only_last, pretrained):
 
     return model
 
-
 def load_training_metrics(checkpoint_path):
     """ Load the training metrics from the given checkpoint path.
+
+    Args:
+        checkpoint_path (str): Path to the checkpoint containing training metrics.
+
+    Returns:
+        epoch_list (list): List of epochs.
+        train_loss_list (list): List of training losses.
+        train_acc_list (list): List of training accuracies.
+        val_loss_list (list): List of validation losses.
+        val_acc_list (list): List of validation accuracies.
     """
-    
     checkpoint = torch.load(checkpoint_path)
     return checkpoint['epoch_list'], checkpoint['train_loss_list'], checkpoint['train_acc_list'], checkpoint['val_loss_list'], checkpoint['val_acc_list']
