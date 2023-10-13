@@ -22,7 +22,8 @@ Inside the `models` directory, you can find custom model architectures. This inc
 
 ## Project Findings
 
-Explore the `findings` folder to view accuracy and loss plots for the trained and fine-tuned models. For a more comprehensive and detailed report on the project, please refer to the project report submitted separately.
+Explore the `findings` folder to view accuracy and loss plots for the trained and fine-tuned models. For a more comprehensive and detailed report on the project, please refer to the project report inside the repo.
+ 
 
 ## References
 
