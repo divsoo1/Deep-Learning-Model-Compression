@@ -1,6 +1,6 @@
 # Deep Machine Learning Project
 
-Welcome to the repository for the Deep Machine Learning Course (DIT967) project at the University of Gothenburg. This project focuses on implementing various model compression techniques on the Resnet50 architecture and evaluating the tradeoffs of each technique in terms of efficiency, model size, and accuracy.
+Welcome to the repository for the Deep Machine Learning - Model compression. This project focuses on implementing various model compression techniques on the Resnet50 architecture and evaluating the tradeoffs of each technique in terms of efficiency, model size, and accuracy.
 
 ## Replicating Results
 
